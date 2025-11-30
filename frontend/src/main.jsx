@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import AuthContext from './context/AuthContext.jsx'
-import UserContext from './context/userContext.jsx'
+import UserContext from './context/UserContext.jsx'
 import { ConnectionProvider } from './context/ConnectionContext.jsx'
 import { NotificationProvider } from './context/NotificationContext.jsx'
 
