@@ -7,9 +7,9 @@ import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import { RxCrossCircled } from "react-icons/rx";
 import { RiUserUnfollowLine } from "react-icons/ri";
 import io from "socket.io-client"
-import { userDataContext } from '../context/userContext'
+import { userDataContext } from '../context/UserContext'
 
-const socket = io("http://localhost:8000")
+const socket = io("https://vybe-vnrp.onrender.com")
 
 function Network() {
   const { serverUrl } = useContext(authDataContext)

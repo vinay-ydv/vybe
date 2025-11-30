@@ -4,13 +4,13 @@ import moment from "moment"
 import { FaRegCommentDots } from "react-icons/fa"
 import axios from "axios"
 import { authDataContext } from "../context/AuthContext"
-import { userDataContext } from "../context/userContext"
+import { userDataContext } from "../context/UserContext"
 import { LuSendHorizontal } from "react-icons/lu"
 import { io } from "socket.io-client"
 import ConnectionButton from "./ConnectionButton"
 import { FaHeart, FaRegHeart } from "react-icons/fa6"
 
-const socket = io("http://localhost:8000")
+const socket = io("https://vybe-vnrp.onrender.com")
 
 function Post({ id, author, like, comment, description, image, createdAt }) {
   const { serverUrl } = useContext(authDataContext)
