@@ -4,10 +4,17 @@ import { io } from "../index.js";
 import Notification from "../models/notification.model.js";
 export const createPost=async (req,res)=>{
     try {
+        console.log("Req.userId:", req.userId);
+        console.log("Req.file:", req.file);
         let {description}=req.body
+        if (!req.userId) return res.status(401).json({ message: "Unauthorized" });
         let newPost;
     if(req.file){
         let image=await uploadOnCloudinary(req.file.path)
+        if(!image)
+        {
+            console.log('image error');
+        }
          newPost=await Post.create({
             author:req.userId,
             description,
@@ -22,7 +29,8 @@ export const createPost=async (req,res)=>{
 return res.status(201).json(newPost)
 
     } catch (error) {
-        return res.status(201).json(`create post error ${error}`)
+        console.error("Create Post Error:", error);  // log the full error
+        return res.status(500).json({ message: "Create post error", error: error.message });
     }
 }
 
