@@ -1,6 +1,9 @@
 import genToken from "../config/token.js"
 import User from "../models/user.model.js"
 import bcrypt from "bcryptjs"
+
+const isProduction = process.env.NODE_ENVIRONMENT === "production";
+
 export const signUp=async (req,res)=>{
     try {
         const {firstName,lastName,userName,email,password}=req.body
@@ -30,8 +33,8 @@ export const signUp=async (req,res)=>{
        res.cookie("token",token,{
         httpOnly:true,
         maxAge:7*24*60*60*1000,
-        sameSite:"strict",
-        secure:process.env.NODE_ENVIRONMENT==="production"
+        secure: isProduction, // true on production (HTTPS), false on localhost 
+        sameSite: isProduction ? "none" : "lax", // "none" for cross-site on prod, "lax" for localhost
        })
       return res.status(201).json(user)
 
@@ -59,8 +62,8 @@ export const login=async (req,res)=>{
         res.cookie("token",token,{
          httpOnly:true,
          maxAge:7*24*60*60*1000,
-         sameSite:"strict",
-         secure:process.env.NODE_ENVIRONMENT==="production"
+        secure: isProduction, // true on production (HTTPS), false on localhost 
+        sameSite: isProduction ? "none" : "lax", // "none" for cross-site on prod, "lax" for localhost
         })
        return res.status(200).json(user)
     } catch (error) {
