@@ -2,37 +2,36 @@ import Post from "../models/post.model.js"
 import uploadOnCloudinary from "../config/cloudinary.js"
 import { io } from "../index.js";
 import Notification from "../models/notification.model.js";
-export const createPost=async (req,res)=>{
+export const createPost = async (req, res) => {
     try {
         console.log("Req.userId:", req.userId);
         console.log("Req.file:", req.file);
-        let {description}=req.body
-        if (!req.userId) return res.status(401).json({ message: "Unauthorized" });
-        let newPost;
-    if(req.file){
-        let image=await uploadOnCloudinary(req.file.path)
-        if(!image)
-        {
-            console.log('image error');
-        }
-         newPost=await Post.create({
-            author:req.userId,
-            description,
-            image
-        })
-    }else{
-        newPost=await Post.create({
-            author:req.userId,
-            description
-        })
-    }
-return res.status(201).json(newPost)
 
+        const { description } = req.body;
+        if (!req.userId) return res.status(401).json({ message: "Unauthorized" });
+
+        let newPost;
+        if (req.file) {
+            const imageUrl = await uploadOnCloudinary(req.file.path);
+            newPost = await Post.create({
+                author: req.userId,
+                description,
+                image: imageUrl // store only URL
+            });
+        } else {
+            newPost = await Post.create({
+                author: req.userId,
+                description
+            });
+        }
+
+        return res.status(201).json(newPost);
     } catch (error) {
-        console.error("Create Post Error:", error);  // log the full error
+        console.error("Create Post Error:", error);
         return res.status(500).json({ message: "Create post error", error: error.message });
     }
 }
+
 
 
 export const getPost=async (req,res)=>{
