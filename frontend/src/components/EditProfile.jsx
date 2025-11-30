@@ -129,7 +129,7 @@ function EditProfile() {
   return (
     <div className='w-full h-[100vh] fixed top-3 lg:top-0  z-[100] flex justify-center items-center'>
       <input type="file" accept='image/*' hidden ref={profileImage} onChange={handleProfileImage}/>
-      <input type="file" accept='image/*' hidden ref={coverImage} onChange={handleCoverImage}/>
+
       <div className='w-full h-full bg-black/70 absolute top-0 left-0'></div>
       <div className='w-[90%] max-w-[500px] h-[600px] bg-[#0f172a] relative overflow-auto z-[200] shadow-2xl rounded-lg p-[10px] border border-[#1f2937] text-gray-100' >
         <div className='absolute top-[20px] right-[20px] cursor-pointer' onClick={() => setEdit(false)}><RxCross1 className='w-[25px] cursor-pointer h-[25px] text-gray-300 hover:text-white transition' /></div>
@@ -199,4 +199,4 @@ function EditProfile() {
 }
 
 export default EditProfile
-
+ 

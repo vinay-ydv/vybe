@@ -3,7 +3,7 @@ import Nav from "../components/Nav";
 
 const Message = () => {
   return (
-    <div className="w-full min-h-screen flex flex-col bg-[#00030e] text-gray-100">
+    <div className="w-full min-h-screen flex flex-col bg-[#0b1020] text-gray-100">
       {/* Navbar */}
       <Nav />
 

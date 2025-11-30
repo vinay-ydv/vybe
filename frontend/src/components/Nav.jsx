@@ -1,5 +1,3 @@
-
-
 import { useContext, useEffect, useState } from "react"
 import vvybe from "../assets/vvybe.png"
 import { IoSearchSharp } from "react-icons/io5"
@@ -11,14 +9,20 @@ import { userDataContext } from "../context/userContext"
 import { authDataContext } from "../context/AuthContext"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import { useConnection } from "../context/ConnectionContext"
+import { useNotification } from "../context/NotificationContext"
+
 function Nav() {
   const [activeSearch, setActiveSearch] = useState(false)
   const { userData, setUserData, handleGetProfile } = useContext(userDataContext)
-
   const navigate = useNavigate()
   const { serverUrl } = useContext(authDataContext)
   const [searchInput, setSearchInput] = useState("")
   const [searchData, setSearchData] = useState([])
+
+  const { pendingRequests } = useConnection()
+  const { notificationCount } = useNotification()
+
   const handleSignOut = async () => {
     try {
       const result = await axios.get(serverUrl + "/api/auth/logout", { withCredentials: true })
@@ -50,11 +54,10 @@ function Nav() {
 
   return (
     <>
-      {/* MOBILE TOP NAV — visible ONLY on small screens */}
-      <div className="w-full h-[60px] bg-[#1a1a1a] fixed top-0 left-0 z-[120] flex lg:hidden items-center justify-between px-4 shadow-lg shadow-blue-300/50">
-        {/* Left: Logo */}
+      {/* MOBILE TOP NAV */}
+      <div className="w-full h-[60px] bg-[#070707] fixed top-0 left-0 z-[120] flex lg:hidden items-center justify-between px-4 shadow-lg shadow-blue-300/50">
         <img
-          src={vvybe }
+          src={vvybe}
           alt="logo"
           className="w-[60px] h-[50px] ml-2 cursor-pointer drop-shadow-[0_5px_2px_white] "
           onClick={() => {
@@ -63,7 +66,6 @@ function Nav() {
           }}
         />
 
-        {/* Right: Logout */}
         <button
           onClick={handleSignOut}
           className="
@@ -80,15 +82,13 @@ function Nav() {
       <div
         className="
     fixed left-0 top-[60px] lg:top-0 h-full w-[70px] lg:w-[300px]
-    bg-[#1a1a1a] shadow-lg shadow-blue-900 z-[100]
+    bg-[#02010c] shadow-lg shadow-blue-900 z-[100]
     flex-col justify-between py-5 hidden lg:flex
   "
       >
-        {/* TOP SECTION */}
         <div className="flex flex-col items-center lg:items-start w-full px-3 gap-6">
-          {/* LOGO */}
           <img
-            src={vvybe }
+            src={vvybe}
             alt=""
             onClick={() => {
               setActiveSearch(false)
@@ -97,7 +97,7 @@ function Nav() {
             className="w-[45px] lg:w-[120px] cursor-pointer items-center justify-center ml-12 mt-3 drop-shadow-[0_5px_2px_white]"
           />
 
-          {/* SEARCH BAR (large screens only) */}
+          {/* Search Bar */}
           <div className="hidden lg:flex w-full h-[40px] bg-[#2a2a2a] items-center px-3 rounded-md border border-gray-700">
             <IoSearchSharp className="text-gray-400 w-[20px] h-[20px]" />
             <input
@@ -108,7 +108,7 @@ function Nav() {
             />
           </div>
 
-          {/* SEARCH DROPDOWN — unchanged logic */}
+          {/* Search dropdown */}
           {searchData.length > 0 && (
             <div className="absolute top-[80px] left-[70px] lg:left-[250px] h-[500px] w-[300px] bg-[#2a2a2a] shadow-lg shadow-blue-900/30 rounded-lg p-4 overflow-auto z-[200] border border-gray-700">
               {searchData.map((sea) => (
@@ -129,7 +129,7 @@ function Nav() {
             </div>
           )}
 
-          {/* SIDEBAR BUTTONS */}
+          {/* Sidebar Buttons */}
           <div className="flex flex-col gap-6 text-gray-300 w-full px-1 lg:px-3">
             <div
               className="flex items-center gap-3 cursor-pointer hover:text-blue-700 transition-colors"
@@ -146,27 +146,38 @@ function Nav() {
               <span className="hidden lg:block font-semibold text-lg">Messages</span>
             </div>
 
+            {/* Friends icon with red dot */}
             <div
               className="flex items-center gap-3 cursor-pointer hover:text-blue-700 transition-colors"
               onClick={() => navigate("/network")}
             >
-              <FaUserGroup className="w-[25px] h-[25px]" />
+              <div className="relative">
+                <FaUserGroup className="w-[25px] h-[25px]" />
+                {pendingRequests > 0 && (
+                  <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 border border-[#02010c]" />
+                )}
+              </div>
               <span className="hidden lg:block font-semibold text-lg">Friends</span>
             </div>
 
+            {/* Notifications icon with red dot */}
             <div
               className="flex items-center gap-3 cursor-pointer hover:text-blue-700 transition-colors"
               onClick={() => navigate("/notification")}
             >
-              <IoNotificationsSharp className="w-[25px] h-[25px]" />
+              <div className="relative">
+                <IoNotificationsSharp className="w-[25px] h-[25px]" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 border border-[#02010c]" />
+                )}
+              </div>
               <span className="hidden lg:block font-semibold text-lg">Notifications</span>
             </div>
           </div>
         </div>
 
-        {/* USER PROFILE ICON */}
+        {/* User Profile Icon */}
         <div className="hidden lg:flex items-center justify-between px-3 pb-5 w-full">
-          {/* Profile Section */}
           <div
             className="flex items-center gap-3 cursor-pointer hover:text-blue-400 transition-colors"
             onClick={() => handleGetProfile(userData.userName)}
@@ -175,29 +186,29 @@ function Nav() {
             <span className="font-semibold text-lg text-gray-200">{userData.firstName}</span>
           </div>
 
-          {/* Logout Button */}
           <button
             onClick={handleSignOut}
             className="
-    px-2 
-    py-1 
-    rounded-full 
-    border-2 
-    border-blue-500 
-    text-blue-400 
-    font-medium 
-    hover:bg-blue-600 
-    hover:text-white 
-    transition-all 
-    duration-200
-    whitespace-nowrap
-  "
+        px-2 
+        py-1 
+        rounded-full 
+        border-2 
+        border-blue-500 
+        text-blue-400 
+        font-medium 
+        hover:bg-blue-600 
+        hover:text-white 
+        transition-all 
+        duration-200
+        whitespace-nowrap
+      "
           >
             Logout
           </button>
         </div>
       </div>
-      {/* MOBILE BOTTOM NAV — Only visible on mobile */}
+
+      {/* MOBILE BOTTOM NAV */}
       <div className="w-full h-[60px] bg-[#1a1a1a] fixed bottom-[-1px] left-0 z-[90] flex lg:hidden justify-around items-center shadow-[0_-2px_10px_rgba(59,130,246,0.2)]">
         <div
           className="flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-blue-400 transition-colors"
@@ -212,18 +223,26 @@ function Nav() {
           <FaFacebookMessenger className="w-[26px] h-[26px]" />
         </div>
 
+        {/* Friends mobile icon with red dot */}
         <div
-          className="flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-blue-400 transition-colors"
+          className="flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-blue-400 transition-colors relative"
           onClick={() => navigate("/network")}
         >
           <FaUserGroup className="w-[26px] h-[26px]" />
+          {pendingRequests > 0 && (
+            <span className="absolute top-1 right-0 h-3 w-3 rounded-full bg-red-500 border border-[#1a1a1a]" />
+          )}
         </div>
 
+        {/* Notifications mobile icon with red dot */}
         <div
-          className="flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-blue-400 transition-colors"
+          className="flex flex-col items-center justify-center cursor-pointer text-gray-300 hover:text-blue-400 transition-colors relative"
           onClick={() => navigate("/notification")}
         >
           <IoNotificationsSharp className="w-[26px] h-[26px]" />
+          {notificationCount > 0 && (
+            <span className="absolute top-1 right-0 h-3 w-3 rounded-full bg-red-500 border border-[#1a1a1a]" />
+          )}
         </div>
 
         <div
@@ -238,3 +257,4 @@ function Nav() {
 }
 
 export default Nav
+
