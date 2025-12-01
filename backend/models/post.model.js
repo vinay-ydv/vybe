@@ -8,6 +8,7 @@ author:{
 },
 description:{
     type:String,
+    required: false,
     default:""
 },
 image:{

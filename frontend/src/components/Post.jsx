@@ -10,20 +10,24 @@ import { io } from "socket.io-client"
 import ConnectionButton from "./ConnectionButton"
 import { FaHeart, FaRegHeart } from "react-icons/fa6"
 
+
 const socket = io("https://vybe-vnrp.onrender.com")
+
 
 function Post({ id, author, like, comment, description, image, createdAt }) {
   const { serverUrl } = useContext(authDataContext)
   const { userData, getPost, handleGetProfile } = useContext(userDataContext)
   const [likes, setLikes] = useState(like)
   const [commentContent, setCommentContent] = useState("")
-  const [comments, setComments] = useState(comment)
+  const [comments, setComments] = useState(comment || [])
   const [showComment, setShowComment] = useState(false)
+
 
   // <CHANGE> Added hover effect states and ref
   const cardRef = useRef(null)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
+
 
   const handleLike = async () => {
     try {
@@ -36,20 +40,34 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
     }
   }
 
+
   const handleComment = async (e) => {
     e.preventDefault()
+    
+    if (!commentContent.trim()) {
+      console.log("Comment is empty")
+      return
+    }
+    
     try {
       const result = await axios.post(
         serverUrl + `/api/post/comment/${id}`,
         { content: commentContent },
-        { withCredentials: true },
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       )
       setComments(result.data.comment)
       setCommentContent("")
     } catch (error) {
+      console.log("Error response:", error.response?.data)
       console.log(error)
     }
   }
+
 
   // <CHANGE> Added mouse move handler for tilt and cursor tracking
   const handleMouseMove = (e) => {
@@ -59,14 +77,17 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
     const y = e.clientY - rect.top
     setCursorPosition({ x, y })
 
+
     // Tilt effect
     const centerX = rect.width / 2
     const centerY = rect.height / 2
-    const rotateX = ((y - centerY) / centerY) * -5 // Reduced intensity for larger card
+    const rotateX = ((y - centerY) / centerY) * -5
     const rotateY = ((x - centerX) / centerX) * 5
+
 
     cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`
   }
+
 
   // <CHANGE> Added mouse leave handler to reset transform
   const handleMouseLeave = () => {
@@ -76,12 +97,13 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
     }
   }
 
+
   useEffect(() => {
     socket.on("likeUpdated", ({ postId, likes }) => {
       if (postId == id) setLikes(likes)
     })
-    socket.on("commentAdded", ({ postId, comm }) => {
-      if (postId == id) setComments(comm)
+    socket.on("commentAdded", ({ postId, comment }) => {
+      if (postId == id) setComments(comment)
     })
     return () => {
       socket.off("likeUpdated")
@@ -89,9 +111,11 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
     }
   }, [id])
 
+
   useEffect(() => {
     getPost()
   }, [likes, comments])
+
 
   return (
     <div
@@ -116,6 +140,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
         />
       )}
 
+
       {/* <CHANGE> Added background glow that follows cursor */}
       {isHovering && (
         <div
@@ -126,6 +151,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
           }}
         />
       )}
+
 
       {/* Header */}
       <div className="flex justify-between items-center p-[20px] pb-[10px] relative z-10">
@@ -155,7 +181,18 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
         )}
       </div>
 
-      {/* FULL IMAGE ONLY — NO DESCRIPTION */}
+
+      {/* NEW: Description Area Above Image */}
+      {description && (
+        <div className="px-[20px] pb-[15px] relative z-10">
+          <p className="text-[15px] text-gray-200 leading-relaxed break-words">
+            {description}
+          </p>
+        </div>
+      )}
+
+
+      {/* FULL IMAGE */}
       {image && (
         <div className="w-full h-[500px] overflow-hidden relative z-10">
           <img
@@ -165,6 +202,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
           />
         </div>
       )}
+
 
       {/* Likes & Comments */}
       <div className="relative z-10">
@@ -181,6 +219,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
             <span>comments</span>
           </div>
         </div>
+
 
         {/* Like & Comment Buttons */}
         <div className="flex items-center w-full px-[20px] py-[15px] gap-[30px]">
@@ -207,6 +246,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
           </div>
         </div>
 
+
         {/* Comments */}
         {showComment && (
           <div className="px-[20px] pb-[20px]">
@@ -226,7 +266,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
               </button>
             </form>
             <div className="flex flex-col gap-[10px] mt-[10px]">
-              {comments.map((com) => (
+              {comments?.map((com) => (
                 <div key={com._id} className="flex flex-col gap-[10px] border-b-2 border-[#3a3a3a] p-[20px]">
                   <div className="flex items-center gap-[10px]">
                     <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-700">
@@ -250,5 +290,6 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
     </div>
   )
 }
+
 
 export default Post

@@ -37,6 +37,21 @@ app.use("/api/user",userRouter)
 app.use("/api/post",postRouter)
 app.use("/api/connection",connectionRouter)
 app.use("/api/notification",notificationRouter)
+
+// 404 (optional)
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// GLOBAL ERROR HANDLER (must be last middleware)
+app.use((err, req, res, next) => {
+  console.error("🔥 GLOBAL ERROR:", err);   // full error + stack in Render logs
+  res.status(err.status || 500).json({
+    message: err.message || "Internal Server Error",
+    stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+  });
+});
+
 export const userSocketMap=new Map()
 io.on("connection",(socket)=>{
 
