@@ -233,17 +233,19 @@ function Home() {
         </div>
 
         {/* Filtered Posts */}
-        {filteredPosts.length > 0 ? (
-          filteredPosts.map((post) => (
-            <Post
-              key={post._id}
-              id={post._id}
-              description={post.description}
-              author={post.author}
-              image={post.image}
-              like={post.like}
-              comment={post.comment}
-              createdAt={post.author.createdAt}
+     {filteredPosts.length > 0 ? (
+  filteredPosts
+    .filter(post => post && post.author) // Add this filter
+    .map((post) => (
+      <Post
+        key={post._id}
+        id={post._id}
+        description={post.description}
+        author={post.author}
+        image={post.image}
+        like={post.like}
+        comment={post.comment}
+        createdAt={post.createdAt}
             />
           ))
         ) : (
