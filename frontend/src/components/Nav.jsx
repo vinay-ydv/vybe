@@ -24,15 +24,30 @@ function Nav() {
   const { notificationCount } = useNotification()
 
   const handleSignOut = async () => {
-    try {
-      const result = await axios.get(serverUrl + "/api/auth/logout", { withCredentials: true })
-      setUserData(null)
-      navigate("/login")
-      console.log(result)
-    } catch (error) {
-      console.log(error)
-    }
+  try {
+    // Call backend logout
+    await axios.get(serverUrl + "/api/auth/logout", { withCredentials: true })
+    
+    // Clear frontend state
+    setUserData(null)
+    
+    // Clear any storage
+    localStorage.clear()
+    sessionStorage.clear()
+    
+    // Navigate with replace to prevent back button
+    navigate("/login", { replace: true })
+    
+  } catch (error) {
+    console.log("Logout error:", error)
+    // Even on error, clear frontend
+    setUserData(null)
+    localStorage.clear()
+    sessionStorage.clear()
+    navigate("/login", { replace: true })
   }
+}
+
 
   const handleSearch = async () => {
     if (!searchInput.trim()) {
