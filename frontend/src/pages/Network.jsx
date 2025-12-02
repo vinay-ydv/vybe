@@ -13,8 +13,8 @@ const socket = io("https://vybe-vnrp.onrender.com")
 
 function Network() {
   const { serverUrl } = useContext(authDataContext)
-  const [connections, setConnections] = useState([]) // pending requests
-  const [friends, setFriends] = useState([])         // confirmed connections (users array)
+  const [connections, setConnections] = useState([])
+  const [friends, setFriends] = useState([])
   const { handleGetProfile } = useContext(userDataContext)
 
   const handleGetRequests = async () => {
@@ -81,7 +81,6 @@ function Network() {
     }
   }
 
-  // NEW: Handle profile click
   const handleProfileClick = (friend) => {
     handleGetProfile(friend.userName)
   }
@@ -92,8 +91,7 @@ function Network() {
   }, [])
 
   return ( 
-    <div className='w-screen min-h-[100vh] bg-[#0b1020] pt-[100px] px-[20px] flex flex-col items-center gap-[40px] text-gray-100'>
-      {/* Pass connections.length as pendingRequests prop */}
+    <div className='w-screen min-h-[100vh] bg-[#0b1020] pt-[100px] px-[20px] flex flex-col items-center gap-[40px] text-gray-100 pb-[40px]'>
       <Nav pendingRequests={connections.length} />
 
       {/* REQUESTS BAR */}
@@ -140,7 +138,7 @@ function Network() {
         </div>
       )}
 
-      {/* FRIENDS SECTION - HORIZONTAL SCROLL */}
+      {/* FRIENDS SECTION - VERTICAL LAYOUT */}
       <div className='w-[90%] lg:w-[60%] lg:ml-[190px] bg-[#111827] shadow-lg rounded-lg p-[20px] border border-[#1f2937]'>
         <div className='text-[22px] text-gray-100 font-semibold mb-[20px] flex items-center justify-between'>
           Friends ({friends.length})
@@ -153,41 +151,43 @@ function Network() {
         </div>
 
         {friends.length > 0 ? (
-          <div className='flex gap-[20px] overflow-x-auto pb-[10px] scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800'>
+          <div className='flex flex-col gap-[20px]'>
             {friends.map((friend, index) => (
               <div
                 key={friend._id || index}
-                className='flex items-center w-[95%] gap-[15px] min-w-[200px] p-[15px] bg-[#1f2937]/50 rounded-lg hover:bg-[#1f2937] transition-all duration-200 group'
+                className='w-full min-h-[100px] p-[20px] flex justify-between items-center border-b border-[#1f2937] last:border-b-0 hover:bg-[#1f2937]/50 transition-all duration-200'
               >
-                {/* Profile Photo - CLICKABLE */}
-                <div 
-                  className='w-[60px] h-[60px] rounded-full overflow-hidden bg-gray-700 border-2 border-[#1f2937] flex-shrink-0 cursor-pointer hover:border-[#22c1ff] transition-all duration-200'
-                  onClick={() => handleProfileClick(friend)}
-                >
-                  <img
-                    src={friend.profileImage || dp}
-                    alt=""
-                    className='w-full h-full object-cover'
-                  />
-                </div>
-                
-                {/* Friend Name - ALSO CLICKABLE */}
-                <div 
-                  className='flex-1 min-w-0 cursor-pointer hover:text-[#22c1ff] transition-colors'
-                  onClick={() => handleProfileClick(friend)}
-                >
-                  <div className='text-gray-200 text-[16px] font-semibold truncate'>
-                    {friend.firstName} {friend.lastName}
+                <div className='flex items-center gap-[15px]'>
+                  <div 
+                    className='w-[60px] h-[60px] rounded-full overflow-hidden bg-gray-700 border-2 border-[#1f2937] cursor-pointer hover:border-[#22c1ff] transition-all duration-200'
+                    onClick={() => handleProfileClick(friend)}
+                  >
+                    <img
+                      src={friend.profileImage || dp}
+                      alt=""
+                      className='w-full h-full object-cover'
+                    />
+                  </div>
+                  
+                  <div 
+                    className='cursor-pointer hover:text-[#22c1ff] transition-colors'
+                    onClick={() => handleProfileClick(friend)}
+                  >
+                    <div className='text-gray-200 text-[19px] font-semibold'>
+                      {friend.firstName} {friend.lastName}
+                    </div>
+                    <div className='text-gray-400 text-[14px]'>
+                      {friend.headline || 'View Profile'}
+                    </div>
                   </div>
                 </div>
                 
-                {/* Unfriend Button - Right Most */}
                 <button
-                  className='text-[#ef4444] hover:text-red-400 hover:scale-110 transition-all duration-200 p-2 rounded-full hover:bg-red-500/20 flex-shrink-0'
+                  className='text-[#ef4444] hover:text-red-400 hover:scale-110 transition-all duration-200 p-2 rounded-full hover:bg-red-500/20'
                   onClick={() => handleUnfriend(friend._id)}
                   title='Unfriend'
                 >
-                  <RiUserUnfollowLine className='w-[24px] h-[24px]' />
+                  <RiUserUnfollowLine className='w-[28px] h-[28px]' />
                 </button>
               </div>
             ))}
@@ -203,4 +203,3 @@ function Network() {
 }
 
 export default Network
-
