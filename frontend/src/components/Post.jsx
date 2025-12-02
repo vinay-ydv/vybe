@@ -10,9 +10,7 @@ import { io } from "socket.io-client"
 import ConnectionButton from "./ConnectionButton"
 import { FaHeart, FaRegHeart } from "react-icons/fa6"
 
-
 const socket = io("https://vybe-vnrp.onrender.com")
-
 
 function Post({ id, author, like, comment, description, image, createdAt }) {
   const { serverUrl } = useContext(authDataContext)
@@ -22,12 +20,10 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
   const [comments, setComments] = useState(comment || [])
   const [showComment, setShowComment] = useState(false)
 
-
-  // <CHANGE> Added hover effect states and ref
+  // Cursor glow (KEEP)
   const cardRef = useRef(null)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
-
 
   const handleLike = async () => {
     try {
@@ -40,82 +36,55 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
     }
   }
 
-
   const handleComment = async (e) => {
     e.preventDefault()
-    
-    if (!commentContent.trim()) {
-      console.log("Comment is empty")
-      return
-    }
-    
+
+    if (!commentContent.trim()) return
+
     try {
       const result = await axios.post(
         serverUrl + `/api/post/comment/${id}`,
         { content: commentContent },
-        { 
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        { withCredentials: true }
       )
       setComments(result.data.comment)
       setCommentContent("")
     } catch (error) {
-      console.log("Error response:", error.response?.data)
-      console.log(error)
+      console.log("Error:", error.response?.data)
     }
   }
 
-
-  // <CHANGE> Added mouse move handler for tilt and cursor tracking
+  // Glow Cursor Only (Removed Tilt)
   const handleMouseMove = (e) => {
     if (!cardRef.current) return
     const rect = cardRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
     setCursorPosition({ x, y })
-
-
-    // Tilt effect
-    const centerX = rect.width / 2
-    const centerY = rect.height / 2
-    const rotateX = ((y - centerY) / centerY) * -5
-    const rotateY = ((x - centerX) / centerX) * 5
-
-
-    cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`
   }
 
-
-  // <CHANGE> Added mouse leave handler to reset transform
   const handleMouseLeave = () => {
     setIsHovering(false)
-    if (cardRef.current) {
-      cardRef.current.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)"
-    }
   }
-
 
   useEffect(() => {
     socket.on("likeUpdated", ({ postId, likes }) => {
       if (postId == id) setLikes(likes)
     })
+
     socket.on("commentAdded", ({ postId, comment }) => {
       if (postId == id) setComments(comment)
     })
+
     return () => {
       socket.off("likeUpdated")
       socket.off("commentAdded")
     }
   }, [id])
 
-
   useEffect(() => {
     getPost()
   }, [likes, comments])
-
 
   return (
     <div
@@ -124,9 +93,8 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={handleMouseLeave}
       className="w-full flex flex-col bg-[#1a1a1a] rounded-lg shadow-lg shadow-black/50 text-gray-100 relative overflow-hidden border-2 border-[#293d5d] transition-all duration-300"
-      style={{ transformStyle: "preserve-3d", transition: "transform 0.1s ease-out" }}
     >
-      {/* <CHANGE> Added animated border glow effect */}
+      {/* Border Glow */}
       {isHovering && (
         <div
           className="pointer-events-none absolute inset-0 rounded-lg"
@@ -140,8 +108,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
         />
       )}
 
-
-      {/* <CHANGE> Added background glow that follows cursor */}
+      {/* Background Glow */}
       {isHovering && (
         <div
           className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300"
@@ -151,7 +118,6 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
           }}
         />
       )}
-
 
       {/* Header */}
       <div className="flex justify-between items-center p-[20px] pb-[10px] relative z-10">
@@ -181,8 +147,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
         )}
       </div>
 
-
-      {/* NEW: Description Area Above Image */}
+      {/* Description */}
       {description && (
         <div className="px-[20px] pb-[15px] relative z-10">
           <p className="text-[15px] text-gray-200 leading-relaxed break-words">
@@ -191,20 +156,18 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
         </div>
       )}
 
-
-      {/* FULL IMAGE */}
+      {/* Image */}
       {image && (
         <div className="w-full h-[500px] overflow-hidden relative z-10">
           <img
-            src={image || "/placeholder.svg"}
+            src={image}
             alt="Post media"
             className="w-full h-full object-cover"
           />
         </div>
       )}
 
-
-      {/* Likes & Comments */}
+      {/* Likes / Comments */}
       <div className="relative z-10">
         <div className="w-full flex justify-between items-center px-[20px] py-[15px] border-b-2 border-[#3a3a3a]">
           <div className="flex items-center gap-[5px] text-[18px] text-gray-300">
@@ -219,7 +182,6 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
             <span>comments</span>
           </div>
         </div>
-
 
         {/* Like & Comment Buttons */}
         <div className="flex items-center w-full px-[20px] py-[15px] gap-[30px]">
@@ -237,6 +199,7 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
               <span className="text-[#cc2048] font-semibold">Liked</span>
             </div>
           )}
+
           <div
             className="flex items-center gap-[5px] cursor-pointer text-gray-300 hover:text-white"
             onClick={() => setShowComment((prev) => !prev)}
@@ -245,7 +208,6 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
             <span>comment</span>
           </div>
         </div>
-
 
         {/* Comments */}
         {showComment && (
@@ -265,9 +227,13 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
                 <LuSendHorizontal className="text-[#07a4ff] w-[22px] h-[22px]" />
               </button>
             </form>
+
             <div className="flex flex-col gap-[10px] mt-[10px]">
               {comments?.map((com) => (
-                <div key={com._id} className="flex flex-col gap-[10px] border-b-2 border-[#3a3a3a] p-[20px]">
+                <div
+                  key={com._id}
+                  className="flex flex-col gap-[10px] border-b-2 border-[#3a3a3a] p-[20px]"
+                >
                   <div className="flex items-center gap-[10px]">
                     <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-700">
                       <img
@@ -276,11 +242,15 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
                         className="h-full w-full object-cover"
                       />
                     </div>
+
                     <div className="text-[16px] font-semibold text-white">
                       {com.user.firstName} {com.user.lastName}
                     </div>
                   </div>
-                  <div className="pl-[50px] text-gray-300">{com.content}</div>
+
+                  <div className="pl-[50px] text-gray-300">
+                    {com.content}
+                  </div>
                 </div>
               ))}
             </div>
@@ -290,6 +260,5 @@ function Post({ id, author, like, comment, description, image, createdAt }) {
     </div>
   )
 }
-
 
 export default Post
