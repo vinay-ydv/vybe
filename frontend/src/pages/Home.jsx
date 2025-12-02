@@ -21,11 +21,15 @@ function Home() {
   let [uploadPost, setUploadPost] = useState(false)
   
   // Filter state
-  const [postFilter, setPostFilter] = useState('all') // 'all' | 'connections'
+  const [postFilter, setPostFilter] = useState('all')
 
   let image = useRef()
   let [posting, setPosting] = useState(false)
   let [suggestedUser, setSuggestedUser] = useState([])
+  
+  // FIXED: Connection state with proper initialization
+  const [connections, setConnections] = useState([])
+  const [connectionsLoaded, setConnectionsLoaded] = useState(false)
 
   function handleImage(e) {
     let file = e.target.files[0]
@@ -48,10 +52,10 @@ function Home() {
 
       setPosting(false)
       setUploadPost(false)
-      setDescription("") // Clear description
-      setFrontendImage("") // Clear image preview
-      setBackendImage("") // Clear backend image
-      getPost() // Refresh posts
+      setDescription("")
+      setFrontendImage("")
+      setBackendImage("")
+      getPost()
     } catch (error) {
       setPosting(false)
       console.log(error)
@@ -67,44 +71,39 @@ function Home() {
     }
   }
 
-  // Get connections to filter posts
-  const [connections, setConnections] = useState([])
+  // FIXED: Get connections with proper error handling
   const handleGetConnections = async () => {
     try {
       const result = await axios.get(`${serverUrl}/api/connection`, { withCredentials: true })
-      setConnections(result.data)
+      setConnections(Array.isArray(result.data) ? result.data : [])
+      setConnectionsLoaded(true)
     } catch (error) {
       console.log("Connections fetch error:", error)
+      setConnections([])
+      setConnectionsLoaded(true)
     }
   }
 
   useEffect(() => {
     handleSuggestedUsers()
-    handleGetConnections() // Fetch connections on mount
+    handleGetConnections()
   }, [])
 
   useEffect(() => {
     getPost()
   }, [uploadPost])
 
-  // Filter posts based on connections
-  const filteredPosts = postFilter === 'connections' 
+  // FIXED: Safe filtering with null checks
+  const filteredPosts = postFilter === 'connections' && connectionsLoaded
     ? postData.filter(post => 
-        connections.some(connection => connection._id === post.author._id)
+        post?.author?._id && connections.some(connection => 
+          connection?._id && connection._id === post.author._id
+        )
       )
     : postData
 
   return (
-    <div
-      className="
-      w-full min-h-[100vh] 
-      bg-[#0b1020] text-gray-200
-      flex items-start justify-center gap-[20px]
-      px-[20px] relative pb-[120px]
-      pt-[30px]
-      lg:pl-[260px]
-    "
-    >
+    <div className="w-full min-h-[100vh] bg-[#0b1020] text-gray-200 flex items-start justify-center gap-[20px] px-[20px] relative pb-[120px] pt-[30px] lg:pl-[260px]">
       {edit && <EditProfile />}
 
       <Nav />
@@ -117,7 +116,6 @@ function Home() {
       {/* Upload Popup */}
       {uploadPost && (
         <div className='w-[90%] max-w-[550px] h-auto max-h-[90vh] bg-[#1e1e1e] shadow-[0_0_40px_rgba(0,0,0,0.8)] top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-lg fixed z-[200] p-[20px] flex flex-col gap-[20px] text-gray-200 overflow-y-auto'>
-          {/* Close Button */}
           <div className='absolute top-[20px] right-[20px] z-10'>
             <RxCross1
               className='w-[25px] h-[25px] cursor-pointer text-gray-300 hover:text-white transition'
@@ -130,20 +128,16 @@ function Home() {
             />
           </div>
 
-          {/* User Info */}
           <div className='flex items-center gap-[10px]'>
             <div className='w-[60px] h-[60px] rounded-full overflow-hidden bg-gray-800'>
-              <img src={userData.profileImage || dp} alt="" className='h-full w-full object-cover' />
+              <img src={userData?.profileImage || dp} alt="" className='h-full w-full object-cover' />
             </div>
-            <div className='text-[20px] font-semibold'> {userData.firstName} {userData.lastName} </div>
+            <div className='text-[20px] font-semibold'> {userData?.firstName} {userData?.lastName} </div>
           </div>
 
-          {/* Hidden File Input */}
           <input type="file" ref={image} hidden onChange={handleImage} accept="image/*" />
           
-          {/* Main Content Area */}
           <div className='w-full flex flex-col gap-[15px]'>
-            {/* Textarea for description */}
             <textarea
               className='w-full min-h-[120px] bg-[#111] text-gray-200 p-[15px] rounded-lg border border-gray-600 focus:border-[#0870a8] focus:outline-none resize-none text-[16px]'
               placeholder='What do you want to talk about?'
@@ -151,7 +145,6 @@ function Home() {
               onChange={(e) => setDescription(e.target.value)}
             />
             
-            {/* Image upload area */}
             <div 
               className='w-full min-h-[200px] rounded-lg overflow-hidden flex items-center justify-center bg-[#111] cursor-pointer border-2 border-dashed border-gray-600 hover:border-gray-500 transition'
               onClick={() => image.current.click()}
@@ -179,7 +172,6 @@ function Home() {
             </div>
           </div>
 
-          {/* Post Button */}
           <div className='w-full flex justify-end'>
             <button
               className='w-[120px] h-[45px] rounded-full bg-[#0870a8] hover:bg-[#0a85c5] transition text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#0870a8]'
@@ -221,11 +213,10 @@ function Home() {
         {/* Create Post */}
         <div className='w-full h-[90px] lg:h-[120px] bg-[#1a1a1a] shadow-lg rounded-lg flex items-center p-[20px] gap-[10px] border-blue-300/50 border'>
           <div className='w-[60px] h-[60px] rounded-full overflow-hidden bg-gray-700 cursor-pointer'>
-            <img src={userData.profileImage || dp} alt="" className='h-full w-full object-cover' />
+            <img src={userData?.profileImage || dp} alt="" className='h-full w-full object-cover' />
           </div>
           <button
-            className='w-[80%] h-[50px] border border-gray-600 rounded-full 
-            bg-[#141414] text-gray-400 hover:bg-[#222] transition px-[20px] text-left'
+            className='w-[80%] h-[50px] border border-gray-600 rounded-full bg-[#141414] text-gray-400 hover:bg-[#222] transition px-[20px] text-left'
             onClick={() => setUploadPost(true)}
           >
             Start a post
@@ -233,21 +224,21 @@ function Home() {
         </div>
 
         {/* Filtered Posts */}
-     {filteredPosts.length > 0 ? (
-  filteredPosts
-    .filter(post => post && post.author) // Add this filter
-    .map((post) => (
-      <Post
-        key={post._id}
-        id={post._id}
-        description={post.description}
-        author={post.author}
-        image={post.image}
-        like={post.like}
-        comment={post.comment}
-        createdAt={post.createdAt}
-            />
-          ))
+        {filteredPosts.length > 0 ? (
+          filteredPosts
+            .filter(post => post && post.author) // FIXED: Additional safety filter
+            .map((post) => (
+              <Post
+                key={post._id}
+                id={post._id}
+                description={post.description}
+                author={post.author}
+                image={post.image}
+                like={post.like}
+                comment={post.comment}
+                createdAt={post.createdAt}
+              />
+            ))
         ) : (
           <div className='w-full bg-[#1a1a1a] shadow-lg rounded-lg p-[40px] text-center border border-[#1f2937]'>
             <div className='text-gray-400 text-[18px] mb-[10px]'>

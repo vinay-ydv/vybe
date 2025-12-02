@@ -52,6 +52,11 @@ function Nav() {
     handleSearch()
   }, [searchInput])
 
+  // FIXED: Add null check for userData
+  if (!userData) {
+    return null
+  }
+
   return (
     <>
       {/* MOBILE TOP NAV */}
@@ -68,24 +73,13 @@ function Nav() {
 
         <button
           onClick={handleSignOut}
-          className="
-      px-3 py-1 rounded-full border-2 
-      border-blue-500 text-blue-400 font-medium 
-      hover:bg-blue-600 hover:text-white
-      transition-all duration-200 mr-3
-    "
+          className="px-3 py-1 rounded-full border-2 border-blue-500 text-blue-400 font-medium hover:bg-blue-600 hover:text-white transition-all duration-200 mr-3"
         >
           Logout
         </button>
       </div>
 
-      <div
-        className="
-    fixed left-0 top-[60px] lg:top-0 h-full w-[70px] lg:w-[300px]
-    bg-[#02010c] shadow-lg shadow-blue-900 z-[100]
-    flex-col justify-between py-5 hidden lg:flex
-  "
-      >
+      <div className="fixed left-0 top-[60px] lg:top-0 h-full w-[70px] lg:w-[300px] bg-[#02010c] shadow-lg shadow-blue-900 z-[100] flex-col justify-between py-5 hidden lg:flex">
         <div className="flex flex-col items-center lg:items-start w-full px-3 gap-6">
           <img
             src={vvybe}
@@ -176,32 +170,19 @@ function Nav() {
           </div>
         </div>
 
-        {/* User Profile Icon */}
+        {/* User Profile Icon - FIXED */}
         <div className="hidden lg:flex items-center justify-between px-3 pb-5 w-full">
           <div
             className="flex items-center gap-3 cursor-pointer hover:text-blue-400 transition-colors"
-            onClick={() => handleGetProfile(userData.userName)}
+            onClick={() => userData && handleGetProfile(userData.userName)}
           >
-            <img src={userData.profileImage || dp} className="w-[45px] h-[45px] rounded-full object-cover" />
-            <span className="font-semibold text-lg text-gray-200">{userData.firstName}</span>
+            <img src={userData?.profileImage || dp} className="w-[45px] h-[45px] rounded-full object-cover" />
+            <span className="font-semibold text-lg text-gray-200">{userData?.firstName}</span>
           </div>
 
           <button
             onClick={handleSignOut}
-            className="
-        px-2 
-        py-1 
-        rounded-full 
-        border-2 
-        border-blue-500 
-        text-blue-400 
-        font-medium 
-        hover:bg-blue-600 
-        hover:text-white 
-        transition-all 
-        duration-200
-        whitespace-nowrap
-      "
+            className="px-2 py-1 rounded-full border-2 border-blue-500 text-blue-400 font-medium hover:bg-blue-600 hover:text-white transition-all duration-200 whitespace-nowrap"
           >
             Logout
           </button>
@@ -245,11 +226,12 @@ function Nav() {
           )}
         </div>
 
+        {/* FIXED: Mobile profile with null check */}
         <div
           className="w-[40px] h-[40px] rounded-full overflow-hidden cursor-pointer"
-          onClick={() => handleGetProfile(userData.userName)}
+          onClick={() => userData && handleGetProfile(userData.userName)}
         >
-          <img src={userData.profileImage || dp} className="w-full h-full" />
+          <img src={userData?.profileImage || dp} className="w-full h-full object-cover" />
         </div>
       </div>
     </>
@@ -257,4 +239,3 @@ function Nav() {
 }
 
 export default Nav
-

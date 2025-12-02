@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'  // <-- Import useNavigate
+import { useNavigate } from 'react-router-dom'
 import Nav from '../components/Nav'
 import dp from "../assets/dp.webp"
 import { FiPlus } from "react-icons/fi";
@@ -16,11 +16,26 @@ function Profile() {
   let { userData, setuserData, edit, setEdit, postData, setPostData, profileData, setProfileData } = useContext(userDataContext)
   let [profilePost, setProfilePost] = useState([])
   let { serverUrl } = useContext(authDataContext)
-  const navigate = useNavigate()  // <-- Initialize navigate
+  const navigate = useNavigate()
 
   useEffect(() => {
-    setProfilePost(postData.filter((post) => post.author._id == profileData._id))
-  }, [profileData])
+    if (profileData && profileData._id && Array.isArray(postData)) {
+      setProfilePost(
+        postData.filter((post) => 
+          post?.author?._id && post.author._id === profileData._id
+        )
+      )
+    }
+  }, [profileData, postData])
+
+  // Add loading check
+  if (!profileData || !profileData._id) {
+    return (
+      <div className='w-full min-h-[100vh] bg-[#0b1020] flex items-center justify-center text-gray-100'>
+        <div className='text-xl'>Loading profile...</div>
+      </div>
+    )
+  }
 
   return (
     <div className='w-full min-h-[100vh] bg-[#0b1020] flex flex-col items-center pt-[100px] pb-[40px] text-gray-100'>
@@ -49,9 +64,9 @@ function Profile() {
             {/* Connections count with onClick to navigate */}
             <div
               className='text-[16px] text-gray-400 cursor-pointer hover:underline'
-              onClick={() => navigate('/network')}  // <-- Change '/network' to your actual friends/connections route path
+              onClick={() => navigate('/network')}
             >
-              {`${profileData.connection.length} connections`}
+              {`${profileData.connection?.length || 0} connections`}
             </div>
           </div>
 
@@ -76,16 +91,16 @@ function Profile() {
         </div>
 
         {profilePost.map((post, index) => (
-          <Post key={index} id={post._id} description={post.description} author={post.author} image={post.image} like={post.like} comment={post.comment} createdAt={post.createdAt} />
+          <Post key={post._id || index} id={post._id} description={post.description} author={post.author} image={post.image} like={post.like} comment={post.comment} createdAt={post.createdAt} />
         ))}
 
         {/* SKILLS SECTION */}
-        {profileData.skills.length > 0 && (
+        {profileData.skills && profileData.skills.length > 0 && (
           <div className='w-full min-h-[100px] flex flex-col gap-[10px] justify-center p-[20px] font-semibold bg-[#111827] shadow-lg rounded-lg border border-[#1f2937]'>
             <div className='text-[22px] text-gray-100'>Skills</div>
             <div className='flex flex-wrap justify-start items-center gap-[20px] text-gray-200 p-[20px]'>
-              {profileData.skills.map((skill) => (
-                <div key={skill} className='text-[20px]'>{skill}</div>
+              {profileData.skills.map((skill, idx) => (
+                <div key={skill + idx} className='text-[20px]'>{skill}</div>
               ))}
               {profileData._id == userData._id && (
                 <button
@@ -100,7 +115,7 @@ function Profile() {
         )}
 
         {/* EDUCATION SECTION */}
-        {profileData.education.length > 0 && (
+        {profileData.education && profileData.education.length > 0 && (
           <div className='w-full min-h-[100px] flex flex-col gap-[10px] justify-center p-[20px] font-semibold bg-[#111827] shadow-lg rounded-lg border border-[#1f2937]'>
             <div className='text-[22px] text-gray-100'>Education</div>
             <div className='flex flex-col justify-start items-start gap-[20px] text-gray-200 p-[20px]'>
@@ -128,4 +143,3 @@ function Profile() {
 }
 
 export default Profile
-

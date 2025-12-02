@@ -2,66 +2,78 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { authDataContext } from './AuthContext.jsx'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-export const userDataContext=createContext()
 
-function UserContext({children}) {
-let [userData,setUserData]=useState(null)
-let {serverUrl}=useContext(authDataContext)
-let [edit,setEdit]=useState(false)
-let [postData,setPostData]=useState([])
-let [profileData,setProfileData]=useState([])
-let navigate=useNavigate()
-const getCurrentUser=async ()=>{
+export const userDataContext = createContext()
+
+function UserContext({ children }) {
+  let [userData, setUserData] = useState(null)
+  let { serverUrl } = useContext(authDataContext)
+  let [edit, setEdit] = useState(false)
+  let [postData, setPostData] = useState([])
+  
+  // FIXED: Initialize profileData as an object instead of array
+  let [profileData, setProfileData] = useState({
+    _id: '',
+    firstName: '',
+    lastName: '',
+    profileImage: '',
+    headline: '',
+    location: '',
+    connection: [],
+    skills: [],
+    education: []
+  })
+  
+  let navigate = useNavigate()
+
+  const getCurrentUser = async () => {
     try {
-        let result=await axios.get(serverUrl+"/api/user/currentuser",{withCredentials:true})
-        setUserData(result.data)
-        return
+      let result = await axios.get(serverUrl + "/api/user/currentuser", { withCredentials: true })
+      setUserData(result.data)
+      setProfileData(result.data) // FIXED: Set current user as initial profile
+      return
     } catch (error) {
-        console.log(error);
-        setUserData(null)
+      console.log(error);
+      setUserData(null)
     }
-}
-
-const getPost=async ()=>{
-  try {
-    let result=await axios.get(serverUrl+"/api/post/getpost",{
-      withCredentials:true
-    })
-    // console.log(result)
-    setPostData(result.data)
-   
-  } catch (error) {
-    console.log(error)
   }
-}
 
-const handleGetProfile=async (userName)=>{
-   try {
-    let result=await axios.get(serverUrl+`/api/user/profile/${userName}`,{
-      withCredentials:true
-    })
-    setProfileData(result.data)
-    navigate("/profile")
-   } catch (error) {
-    console.log(error)
-   }
-}
-
-
-
-useEffect(() => {
-getCurrentUser();
- getPost()
-}, []);
-
-
-    const value={
-        userData,setUserData,edit,setEdit,postData,setPostData,getPost,handleGetProfile,profileData,setProfileData
+  const getPost = async () => {
+    try {
+      let result = await axios.get(serverUrl + "/api/post/getpost", {
+        withCredentials: true
+      })
+      setPostData(result.data)
+    } catch (error) {
+      console.log(error)
     }
+  }
+
+  const handleGetProfile = async (userName) => {
+    try {
+      let result = await axios.get(serverUrl + `/api/user/profile/${userName}`, {
+        withCredentials: true
+      })
+      setProfileData(result.data)
+      navigate("/profile")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    getCurrentUser();
+    getPost()
+  }, []);
+
+  const value = {
+    userData, setUserData, edit, setEdit, postData, setPostData, getPost, handleGetProfile, profileData, setProfileData
+  }
+
   return (
     <div>
-        <userDataContext.Provider value={value}>
-      {children}
+      <userDataContext.Provider value={value}>
+        {children}
       </userDataContext.Provider>
     </div>
   )
